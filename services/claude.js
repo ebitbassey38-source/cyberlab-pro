@@ -15,11 +15,13 @@ async function askClaude(systemPrompt, userPrompt) {
       {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.GROK_API_KEY}`
+          'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
         }
       }
     );
+
     return response.data.choices[0].message.content.trim();
+
   } catch (error) {
     console.error('Groq API error:', error.message);
     return 'AI analysis unavailable at this time.';
