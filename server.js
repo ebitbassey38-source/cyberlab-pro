@@ -18,6 +18,13 @@ app.use('/api/sqli', require('./routes/sqli'));
 app.use('/api/xss', require('./routes/xss'));
 app.use('/api/auth', require('./routes/authtest'));
 app.use('/api/idor', require('./routes/idor'));
+app.use('/api/hash', require('./routes/hash'));
+app.use('/api/scan', require('./routes/scan'));
+app.use('/api/network', require('./routes/network'));
+app.use('/api/apivuln', require('./routes/apivuln'));
+app.use('/api/fixguide', require('./routes/fixguide'));
+app.use('/api/report', require('./routes/report'));
+app.use('/api/takeover', require('./routes/takeover'));
 
 app.get('/api/health', (req, res) => {
   res.json({
