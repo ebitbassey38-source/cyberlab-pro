@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<body>
+<button onclick="testClick()">Test Button</button>
+<div id="result"></div>
+<script>
+function testClick() {
+  fetch('http://localhost:3000/api/health')
+    .then(function(r) { return r.json(); })
+    .then(function(d) { document.getElementById('result').innerHTML = JSON.stringify(d); })
+    .catch(function(e) { document.getElementById('result').innerHTML = 'Error: ' + e.message; });
+}
+</script>
+</body>
+</html>

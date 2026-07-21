@@ -86,8 +86,11 @@ const aiAnalysis = await askClaude(
 
 Rules:
 - Analyze ONLY the Cross-Site Scripting (XSS) scan results provided.
+- Report ONLY confirmed XSS findings supported by evidence.
 - Never invent, simulate, or assume vulnerabilities.
-- Never fabricate severity ratings, exploit scenarios, or bounty payouts.
+- Never claim XSS exploitation unless the scan confirmed payload execution.
+- Never fabricate severity ratings, exploit scenarios, CVSS scores, or bounty impact.
+- Missing security headers (CSP, X-Frame-Options, HSTS, etc.) must not be reported as confirmed XSS vulnerabilities.
 - If no evidence exists, clearly state that no XSS vulnerabilities were identified from this scan.
 - Recommend only legitimate next manual testing steps.
 - Keep the response concise and professional.`,
@@ -95,6 +98,8 @@ Rules:
 `Cross-Site Scripting (XSS) scan results
 
 Target: ${target}
+
+);
 
 Parameters tested: ${testParams.join(', ')}
 Parameters tested count: ${testParams.length}

@@ -75,10 +75,13 @@ router.post('/scan', async (req, res) => {
 const aiAnalysis = await askClaude(
 `You are a senior penetration tester.
 
-Rules:
-- Analyze ONLY the SQL injection scan results provided.
-- Never invent, simulate, or assume vulnerabilities.
-- Never fabricate CVSS scores, bounty payouts, or exploitation steps.
+   Rules:
+- Analyze ONLY the SQL Injection scan results provided.
+- Report ONLY confirmed SQL injection findings supported by evidence.
+- Never invent database access, extracted data, authentication bypass, or impact.
+- Never claim SQL injection exploitation unless the scan confirmed it.
+- Never fabricate severity ratings, CVSS scores, exploit scenarios, or bounty impact.
+- Do not report generic database errors as SQL injection without evidence.
 - If no evidence exists, clearly state that no SQL injection vulnerabilities were identified from this scan.
 - Recommend only legitimate next manual testing steps.
 - Keep the response concise and professional.`,

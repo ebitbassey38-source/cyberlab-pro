@@ -44,13 +44,17 @@ router.post('/scan', async (req, res) => {
 const aiAnalysis = await askClaude(
 `You are a senior penetration tester.
 
-Rules:
+  Rules:
 - Analyze ONLY the IDOR scan results provided.
-- Never invent, simulate, or assume vulnerabilities.
-- Never fabricate severity ratings, exploit scenarios, CVSS scores, or bounty payouts.
+- Report ONLY confirmed authorization issues supported by evidence.
+- Never invent unauthorized access, account takeover, or sensitive data exposure.
+- Never claim IDOR exploitation unless the scan confirmed an access control failure.
+- Never fabricate severity ratings, CVSS scores, exploit scenarios, or bounty impact.
+- Different responses alone do not prove IDOR; require evidence of unauthorized object access.
 - If no evidence exists, clearly state that no IDOR vulnerabilities were identified from this scan.
 - Recommend only legitimate next manual testing steps.
 - Keep the response concise and professional.`,
+
 
 `IDOR scan results
 

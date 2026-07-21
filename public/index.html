@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CyberLab Pro</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">⚡</span>
+        <div>
+          <span class="logo-title">CyberLab <span class="cyan">Pro</span></span>
+          <span class="logo-sub">Bug Bounty Toolkit · AI-Powered</span>
+        </div>
+      </div>
+      <div class="live-badge"><span class="live-dot"></span> Live</div>
+    </div>
+  </header>
+
+  <div class="disclaimer">
+    ⚠ <strong>Authorized use only.</strong> Only scan systems you own or have written permission to test.
+  </div>
+<div class="tabs">
+    <button class="tab active" id="tab-btn-vuln" onclick="switchTab('vuln')">🔍 Vuln Scanner</button>
+    <button class="tab" id="tab-btn-hash" onclick="switchTab('hash')">🔐 Hash Tools</button>
+    <button class="tab" id="tab-btn-network" onclick="switchTab('network')">🌐 Network Recon</button>
+    <button class="tab" id="tab-btn-takeover" onclick="switchTab('takeover')">💀 Takeover</button>
+    <button class="tab" id="tab-btn-apivuln" onclick="switchTab('apivuln')">🔌 API Vuln</button>
+    <button class="tab" id="tab-btn-dirscan" onclick="switchTab('dirscan')">📁 Directory Scan</button>
+    <button class="tab" id="tab-btn-sqli" onclick="switchTab('sqli')">💉 SQLi Test</button>
+    <button class="tab" id="tab-btn-xss" onclick="switchTab('xss')">🕷 XSS Test</button>
+    <button class="tab" id="tab-btn-idor" onclick="switchTab('idor')">🔑 IDOR Test</button>
+</div>
+
+<main class="main">
+
+    <section id="tab-vuln" class="tab-content active">
+      <div class="form-group">
+        <label>Target URL or IP</label>
+        <input type="text" id="vuln-target" placeholder="https://example.com"/>
+      </div>
+      <div class="form-group">
+        <label>Scan Type</label>
+        <div class="scan-types">
+          <button class="scan-type active" id="st-full" onclick="setScanType('full','st-full')">Full Scan</button>
+          <button class="scan-type" id="st-headers" onclick="setScanType('headers','st-headers')">Headers</button>
+          <button class="scan-type" id="st-sqli" onclick="setScanType('sqli','st-sqli')">SQLi</button>
+          <button class="scan-type" id="st-xss" onclick="setScanType('xss','st-xss')">XSS</button>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="runVulnScan()">🔍 Run Scan</button>
+      <div id="vuln-results"></div>
+      <button class="btn-primary" onclick="generateReport()" style="background:linear-gradient(135deg,#d4a832,#b45309);color:#0a0e17;margin-top:10px;display:none" id="report-btn">📋 Generate HackerOne Report</button>
+      <div id="report-output" style="display:none"></div>
+    </section>
+
+    <section id="tab-hash" class="tab-content">
+      <div class="hash-tabs">
+        <button class="hash-tab active" id="ht-identify" onclick="switchHashTab('identify','ht-identify')">Identify</button>
+        <button class="hash-tab" id="ht-generate" onclick="switchHashTab('generate','ht-generate')">Generate</button>
+        <button class="hash-tab" id="ht-strength" onclick="switchHashTab('strength','ht-strength')">Strength</button>
+      </div>
+
+      <div id="hash-identify" class="hash-content active">
+        <div class="form-group">
+          <label>Paste hash string</label>
+          <input type="text" id="hash-input" placeholder="5f4dcc3b5aa765d61d8327deb882cf99"/>
+        </div>
+        <button class="btn-primary" onclick="runHashIdentify()">🔍 Identify Hash</button>
+        <div id="hash-identify-results"></div>
+      </div>
+
+      <div id="hash-generate" class="hash-content">
+        <div class="form-group">
+          <label>Input string</label>
+          <input type="text" id="generate-input" placeholder="Text to hash"/>
+        </div>
+        <div class="form-group">
+          <label>Algorithm</label>
+          <div class="algo-btns">
+            <button class="algo-btn active" id="al-sha256" onclick="setAlgo('sha256','al-sha256')">SHA-256</button>
+            <button class="algo-btn" id="al-sha1" onclick="setAlgo('sha1','al-sha1')">SHA-1</button>
+            <button class="algo-btn" id="al-sha512" onclick="setAlgo('sha512','al-sha512')">SHA-512</button>
+            <button class="algo-btn" id="al-md5" onclick="setAlgo('md5','al-md5')">MD5</button>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="runGenerate()">⚡ Generate Hash</button>
+        <div id="hash-generate-results"></div>
+      </div>
+
+      <div id="hash-strength" class="hash-content">
+        <div class="form-group">
+          <label>Password to analyze</label>
+          <input type="text" id="strength-input" placeholder="Enter any password"/>
+        </div>
+        <button class="btn-primary" onclick="runStrength()">🛡 Analyze Strength</button>
+        <div id="hash-strength-results"></div>
+      </div>
+    </section>
+
+    <section id="tab-network" class="tab-content">
+      <div class="form-group">
+        <label>Domain or IP address</label>
+        <input type="text" id="network-target" placeholder="example.com"/>
+      </div>
+      <button class="btn-primary" onclick="runNetwork()">🌐 Analyze Network</button>
+      <div id="network-results"></div>
+    </section>
+
+    <section id="tab-apivuln" class="tab-content">
+      <div class="form-group">
+        <label>Target URL</label>
+        <input type="text" id="apivuln-target" placeholder="https://example.com"/>
+      </div>
+      <button class="btn-primary" onclick="runApiVuln()">🔌 Scan API Vulnerabilities</button>
+      <div id="apivuln-results"></div>
+    </section>
+<section id="tab-dirscan" class="tab-content">
+  <div class="form-group">
+    <label>Target URL</label>
+    <input type="text" id="dirscan-target" placeholder="https://example.com"/>
+  </div>
+
+  <button class="btn-primary" onclick="runDirScan()">📁 Scan Directories</button>
+
+  <div id="dirscan-results"></div>
+</section>    
+<section id="tab-sqli" class="tab-content">
+  <div class="form-group">
+    <label>Target URL</label>
+    <input type="text" id="sqli-target" placeholder="https://example.com"/>
+  </div>
+
+  <button class="btn-primary" onclick="runSQLiScan()">💉 Scan for SQL Injection</button>
+
+  <div id="sqli-results"></div>
+</section>
+
+<section id="tab-xss" class="tab-content">
+  <div class="form-group">
+    <label>Target URL</label>
+    <input type="text" id="xss-target" placeholder="https://example.com"/>
+  </div>
+
+  <button class="btn-primary" onclick="runXSSScan()">🕷 Scan for XSS</button>
+
+  <div id="xss-results"></div>
+</section>
+
+<section id="tab-idor" class="tab-content">
+  <div class="form-group">
+    <label>Target URL</label>
+    <input type="text" id="idor-target" placeholder="https://example.com"/>
+  </div>
+
+  <button class="btn-primary" onclick="runIDORScan()">🔑 Scan for IDOR</button>
+
+  <div id="idor-results"></div>
+</section>
+
+<section id="tab-takeover" class="tab-content">
+      <div class="form-group">
+        <label>Target Domain</label>
+        <input type="text" id="takeover-target" placeholder="example.com"/>
+      </div>
+      <button class="btn-primary" onclick="runTakeover()">💀 Check Subdomain Takeover</button>
+      <div id="takeover-results"></div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

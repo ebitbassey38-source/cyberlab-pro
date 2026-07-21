@@ -1,3 +1,4 @@
+
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
@@ -55,11 +56,14 @@ router.post('/scan', async (req, res) => {
 const aiAnalysis = await askClaude(
 `You are a senior penetration tester.
 
-Rules:
+  Rules:
 - Analyze ONLY the authentication scan results provided.
-- Never invent, simulate, or assume vulnerabilities.
-- Never fabricate severity ratings, exploit scenarios, or bounty payouts.
-- If no evidence exists, clearly state that no authentication weaknesses were identified from this scan.
+- Report ONLY confirmed authentication weaknesses supported by evidence.
+- Never claim account takeover, credential compromise, or privilege escalation without proof.
+- Never invent successful logins, exposed accounts, or unauthorized access.
+- Never fabricate severity ratings, CVSS scores, exploit scenarios, or bounty impact.
+- Weak/default credentials must only be reported if the scan confirmed successful authentication.
+- If no evidence exists, clearly state that no authentication vulnerabilities were identified from this scan.
 - Recommend only legitimate next manual testing steps.
 - Keep the response concise and professional.`,
 

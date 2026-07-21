@@ -16,7 +16,8 @@ async function askClaude(systemPrompt, userPrompt) {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
-        }
+        },
+        timeout: 60000
       }
     );
 

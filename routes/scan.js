@@ -24,8 +24,14 @@ function analyzeHeaders(headers, status) {
   const findings = [];
 
   if (!headers['content-security-policy']) {
-    findings.push({ id: 1, type: 'Missing Content-Security-Policy', severity: 'high', detail: 'CSP header absent. XSS and data injection attacks not mitigated.', vector: 'HTTP Header' });
-  }
+  findings.push({
+    id: 1,
+    type: 'Missing Content-Security-Policy',
+    severity: 'low',
+    detail: 'Content-Security-Policy header is missing. This reduces browser-side security hardening. No XSS vulnerability was confirmed.',
+    vector: 'HTTP Header'
+  });
+}
   if (!headers['x-frame-options'] && !headers['content-security-policy']?.includes('frame-ancestors')) {
     findings.push({ id: 2, type: 'Missing X-Frame-Options', severity: 'medium', detail: 'Clickjacking protection header missing. Page can be embedded in iframes.', vector: 'HTTP Header' });
   }
