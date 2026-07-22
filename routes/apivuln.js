@@ -58,9 +58,26 @@ async function probeEndpoint(baseUrl, path) {
         result.issue = 'Debug/test endpoint exposed in production — may leak internal data';
         result.severity = 'medium';
       } else if (contentType.includes('application/json')) {
-        result.vulnerable = true;
-        result.issue = 'API endpoint returns data without authentication — potential IDOR or data exposure';
-        result.severity = 'medium';
+
+        const sensitivePatterns = [
+          'password',
+          'secret',
+          'token',
+          'api_key',
+          'apikey',
+          'private_key',
+          'credential'
+        ];
+
+        const hasSensitiveData = sensitivePatterns.some(pattern =>
+          body.includes(pattern)
+        );
+
+        if (hasSensitiveData) {
+          result.vulnerable = true;
+          result.issue = 'API endpoint may expose sensitive data in response';
+          result.severity = 'high';
+        }
       }
     }
 
@@ -117,7 +134,17 @@ router.post('/scan', async (req, res) => {
   const vulnerable = results.filter(r => r.vulnerable);
 
   const aiAnalysis = await askClaude(
-    'You are a senior bug bounty hunter specializing in API security testing.',
+`You are a senior API security reviewer.
+
+Rules:
+- Analyze ONLY the API scan results provided.
+- Report ONLY confirmed API security findings supported by evidence.
+- Never invent vulnerabilities that were not detected.
+- Never provide bounty payout estimates.
+- Never claim authentication bypass, SSRF, IDOR, data exposure, or exploitation without evidence.
+- If no vulnerabilities are found, clearly state that no confirmed API vulnerabilities were identified.
+- Separate confirmed findings from recommended manual testing areas.
+- Keep the response concise and professional.`,
     `API vulnerability scan for: ${target}
 
 Exposed endpoints found (status 200/403):

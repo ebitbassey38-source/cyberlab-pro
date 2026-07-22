@@ -31,7 +31,7 @@ function checkSSL(host) {
 async function fetchSecurityHeaders(host) {
   try {
     const res = await axios.get('https://' + host, {
-      timeout: 6000, maxRedirects: 3, validateStatus: () => true,
+      timeout: 15000, maxRedirects: 3, validateStatus: () => true,
       headers: { 'User-Agent': 'Mozilla/5.0 (compatible; CyberLab-Mini/1.0)' }
     });
     const h = res.headers;
@@ -44,8 +44,8 @@ async function fetchSecurityHeaders(host) {
       { name: 'Server',                     value: h['server'] || 'Hidden',                      risk: h['server'] ? 'warn' : 'safe' },
     ];
   } catch (e) {
-    return [{ name: 'Headers', value: 'Could not fetch', risk: 'warn' }];
-  }
+    return [{ name: 'Headers', value: `Could not fetch (${e.message})`, risk: 'warn' }];
+}
 }
 
 router.post('/analyze', async (req, res) => {
@@ -78,10 +78,22 @@ router.post('/analyze', async (req, res) => {
     { port: 8080, service: 'HTTP-Alt', status: 'unknown',  note: 'Requires direct probe' },
   ];
 
-  const missingHeaders = headerResults.filter(h => h.risk === 'warn').map(h => h.name);
+  const missingHeaders = headerResults
+  .filter(h => h.value === 'MISSING')
+  .map(h => h.name);
+
+const presentHeaders = headerResults
+  .filter(h => h.value !== 'MISSING')
+  .map(h => `${h.name}: ${h.value}`);
   const aiAnalysis = await askClaude(
-    'You are a senior bug bounty hunter specializing in network recon.',
-    `Real network analysis for: ${target}\nDNS: ${dnsResults.map(r => `${r.type}:${r.value}`).join(', ')}\nSSL Grade: ${sslResult.grade} | Valid: ${sslResult.valid} | Issuer: ${sslResult.issuer} | Expires: ${sslResult.expires}\nMissing headers: ${missingHeaders.join(', ') || 'None'}\nSubdomains to investigate: ${subdomains.join(', ')}\n\nMap the attack surface and suggest next bounty steps. Be concise.`
+    'You are a senior bug bounty hunter and defensive security consultant. Report only facts directly observed from the scan. Never invent subdomains, endpoints, services, technologies, vulnerabilities, or hosting providers. Clearly label anything not confirmed as "Unverified". Separate Observed Findings, Unverified Hypotheses, and Recommendations.',
+    `Real network analysis for: ${target}\nDNS: ${dnsResults.map(r => `${r.type}:${r.value}`).join(', ')}\nSSL Grade: ${sslResult.grade} | Valid: ${sslResult.valid} | Issuer: ${sslResult.issuer} | Expires: ${sslResult.expires}\n    Missing headers: ${missingHeaders.join(', ') || 'None'}\nPresent headers: ${presentHeaders.join(', ') || 'None'}\nCandidate subdomains(NOT VERIFIED - manual verification required): ${subdomains.join(', ')}\n\n     Produce a report with these sections:
+
+1. Observed Findings (facts confirmed by this scan only)
+2. Unverified Hypotheses (clearly marked as not confirmed)
+3. Recommended Next Steps (manual verification only)
+
+Do not invent hosts, services, technologies, vulnerabilities, or attack paths. If information is unavailable, explicitly say "Not confirmed by this scan." Keep the report concise and professional.`
   );
 
   res.json({ host, dnsRecords: dnsResults, ssl: sslResult, headers: headerResults, ports, subdomains, aiAnalysis });

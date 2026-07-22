@@ -99,7 +99,21 @@ router.post('/check', async (req, res) => {
   const active     = results.filter(r => r.status === 'active');
 
   const aiAnalysis = await askClaude(
-    'You are a senior bug bounty hunter specializing in subdomain takeover vulnerabilities.',
+`You are a senior defensive security reviewer.
+
+Rules:
+- Analyze ONLY confirmed subdomain takeover scan evidence.
+- Never provide takeover exploitation steps unless a vulnerable subdomain is confirmed.
+- DNS records or CNAME presence alone do not prove takeover.
+- Never claim a bounty impact without confirmed vulnerability evidence.
+- Clearly separate confirmed findings from recommendations.
+- If no vulnerable subdomains are found, state that no subdomain takeover vulnerability was identified.
+
+Provide:
+1. Summary
+2. Confirmed Findings
+3. Risk Assessment
+4. Recommended Manual Verification Steps.`,
     `Subdomain takeover scan for: ${domain}
 
 Found subdomains: ${found.map(r => r.subdomain).join(', ') || 'None'}

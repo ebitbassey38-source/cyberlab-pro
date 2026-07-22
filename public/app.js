@@ -199,8 +199,8 @@ function runNetwork() {
       var subs = data.subdomains.map(function(s) { return '<span class="tag">' + s + '</span>'; }).join('');
       var html = '<div class="card"><p class="card-title">DNS Records</p>' + dns + '</div>';
       html += '<div class="card"><p class="card-title">Security Headers</p>' + hdrs + '</div>';
-      html += '<div class="card"><p class="card-title">Port Scan</p>' + ports + '</div>';
-      html += '<div class="card"><p class="card-title">Subdomains</p><div class="tags">' + subs + '</div></div>';
+      html += '<div class="card"><p class="card-title">Common Ports (Probe Required)</p>' + ports + '</div>';
+      html += '<div class="card"><p class="card-title">Candidate Subdomains</p><div class="tags">' + subs + '</div></div>';
       html += aiBox(data.aiAnalysis);
       show('network-results', html);
     })

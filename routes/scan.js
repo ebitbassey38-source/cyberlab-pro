@@ -49,7 +49,13 @@ function analyzeHeaders(headers, status) {
   }
   const server = headers['server'];
   if (server) {
-    findings.push({ id: 7, type: 'Server Version Disclosure', severity: 'low', detail: `Server header reveals: "${server}". Attackers can target known vulnerabilities.`, vector: 'HTTP Header' });
+    findings.push({
+  id: 7,
+  type: 'Server Header Disclosure',
+  severity: 'info',
+  detail: `Server header reveals: "${server}". No server version information was exposed.`,
+  vector: 'HTTP Header'
+});
   }
   const powered = headers['x-powered-by'];
   if (powered) {
@@ -88,7 +94,7 @@ router.post('/vuln', async (req, res) => {
   }
 
   const aiAnalysis = await askClaude(
-    'You are a senior bug bounty hunter. Give sharp, actionable analysis. No fluff.',
+    'You are a senior bug bounty hunter and defensive security reviewer. Analyze only the provided scan findings. Never increase severity beyond the scanner rating. Never claim a vulnerability is exploitable unless confirmed by evidence. Missing security headers alone are not critical unless an actual impact is demonstrated. Clearly separate confirmed findings from recommendations.',
     `Real scan results for target: ${target}\n\n${findings.map(f => `[${f.severity.toUpperCase()}] ${f.type}: ${f.detail}`).join('\n')}\n\nPrioritize top findings for a bounty report and suggest next manual steps. Be concise.`
   );
 
