@@ -39,7 +39,7 @@ async function testParameter(baseUrl, param, payload) {
     }
 
     return null;
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -73,7 +73,6 @@ router.post('/scan', async (req, res) => {
   for (const param of testParams) {
     for (const payload of PAYLOADS) {
       const result = await testParameter(baseUrl, param, payload);
-
       if (result) {
         findings.push(result);
         break;
@@ -81,43 +80,23 @@ router.post('/scan', async (req, res) => {
     }
   }
 
-const aiAnalysis = await askClaude(
+  const aiAnalysis = await askClaude(
 `You are a senior penetration tester.
 
-Rules:
-- Analyze ONLY the Cross-Site Scripting (XSS) scan results provided.
-- Report ONLY confirmed XSS findings supported by evidence.
-- Never invent, simulate, or assume vulnerabilities.
-- Never claim XSS exploitation unless the scan confirmed payload execution.
-- Never fabricate severity ratings, exploit scenarios, CVSS scores, or bounty impact.
-- Missing security headers (CSP, X-Frame-Options, HSTS, etc.) must not be reported as confirmed XSS vulnerabilities.
-- If no evidence exists, clearly state that no XSS vulnerabilities were identified from this scan.
-- Recommend only legitimate next manual testing steps.
-- Keep the response concise and professional.`,
-
-`Cross-Site Scripting (XSS) scan results
-
-Target: ${target}
-
-);
+Analyze ONLY the scan results provided.
+Never invent vulnerabilities.
+If no confirmed XSS exists, clearly say none were found.
+Keep the response concise.`,
+`Target: ${target}
 
 Parameters tested: ${testParams.join(', ')}
-Parameters tested count: ${testParams.length}
 Confirmed findings: ${findings.length}
 
-Results:
 ${findings.length
-  ? findings.map(f =>
-      `[${f.type}] Parameter: ${f.param} | Payload: ${f.payload}`
-    ).join('\n')
-  : 'No Cross-Site Scripting vulnerabilities were identified.'}
+? findings.map(f => `[${f.type}] ${f.param} -> ${f.payload}`).join('\n')
+: 'No confirmed XSS vulnerabilities identified.'}`
+  );
 
-Provide:
-1. Summary
-2. Confirmed findings only
-3. Risk assessment based only on the evidence
-4. Recommended next manual testing steps`
-);
 
   res.json({
     target,

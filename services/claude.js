@@ -6,7 +6,7 @@ async function askClaude(systemPrompt, userPrompt) {
       'https://api.groq.com/openai/v1/chat/completions',
       {
         model: 'llama-3.1-8b-instant',
-        max_tokens: 1000,
+        max_tokens: 700,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -17,7 +17,7 @@ async function askClaude(systemPrompt, userPrompt) {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
         },
-        timeout: 60000
+        timeout: 10000
       }
     );
 
@@ -25,8 +25,9 @@ async function askClaude(systemPrompt, userPrompt) {
 
   } catch (error) {
     console.error('Groq API error:', error.message);
-    return 'AI analysis unavailable at this time.';
+    return 'AI analysis unavailable (timeout or network error).';
   }
 }
 
 module.exports = { askClaude };
+

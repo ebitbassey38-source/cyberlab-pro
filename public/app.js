@@ -352,12 +352,12 @@ function runSQLiScan() {
 }
 
 async function runXSSScan() {
-  const target = document.getElementById("xss-target").value;
+ const target = document.getElementById("xss-target").value;
 
   document.getElementById("xss-results").innerHTML =
     "<div class='loading'>Scanning...</div>";
 
-  const res = await fetch("/api/xss", {
+  const res = await fetch("/api/xss/scan", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ target })
@@ -375,7 +375,7 @@ async function runIDORScan() {
   document.getElementById("idor-results").innerHTML =
     "<div class='loading'>Scanning...</div>";
 
-  const res = await fetch("/api/idor", {
+  const res = await fetch("/api/idor/scan", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ target })
