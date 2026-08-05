@@ -283,6 +283,8 @@ async function scanPathTraversal(httpRequest) {
 
 module.exports = {
 
+  scan: scanPathTraversal,
+
   scanPathTraversal,
 
   discoverParameters
