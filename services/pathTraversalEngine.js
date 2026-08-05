@@ -2,7 +2,9 @@ const { replay } = require("./requestReplay");
 const { createResult } = require("./baseEngine");
 
 const PAYLOADS =
-  require("./pathTraversal/payloads");
+  Object.values(
+    require("./pathTraversal/payloads")
+  ).flat();
 
 const fingerprints =
   require("./pathTraversal/fingerprints");
@@ -71,42 +73,48 @@ function discoverParameters(httpRequest) {
 
 function cloneRequest(httpRequest) {
 
+  const source =
+    typeof httpRequest.toObject === "function"
+      ? httpRequest.toObject()
+      : httpRequest;
+
   return {
 
-    ...httpRequest,
+    ...source,
 
     headers: {
-      ...(httpRequest.headers || {})
+      ...(source.headers || {})
     },
 
     body:
-      httpRequest.body &&
-      typeof httpRequest.body === "object"
-        ? { ...httpRequest.body }
-        : httpRequest.body
+      source.body &&
+      typeof source.body === "object"
+        ? { ...source.body }
+        : source.body
 
   };
 
 }
 
-
 function injectParameter(request, parameter, payload) {
 
-  const modified = cloneRequest(request);
+  const modified =
+    cloneRequest(request);
 
   if (parameter.location === "query") {
 
-    const url = new URL(modified.url);
+    const url =
+      new URL(modified.url);
 
     url.searchParams.set(
       parameter.name,
       payload
     );
 
-    modified.url = url.toString();
+    modified.url =
+      url.toString();
 
   }
-
 
   if (parameter.location === "body") {
 
@@ -114,36 +122,14 @@ function injectParameter(request, parameter, payload) {
 
       ...(modified.body || {}),
 
-      [parameter.name]: payload
+      [parameter.name]:
+        payload
 
     };
 
   }
 
-
   return modified;
-
-}
-
-
-function collectFingerprintMatches(responseBody) {
-
-  const matches = [];
-
-  for (const fingerprint of fingerprints) {
-
-    if (
-      responseBody &&
-      responseBody.includes(fingerprint)
-    ) {
-
-      matches.push(fingerprint);
-
-    }
-
-  }
-
-  return matches;
 
 }
 /*
@@ -154,139 +140,136 @@ function collectFingerprintMatches(responseBody) {
 
 async function scanPathTraversal(httpRequest) {
 
-  const parameters = discoverParameters(httpRequest);
+  const result =
+    createResult("path_traversal");
 
-  const findings = [];
+  const evidence =
+    result.evidence;
 
-  let tested = 0;
+  const parameters =
+    discoverParameters(httpRequest);
 
+  result.metadata.parameters =
+    parameters;
+
+  if (!parameters.length) {
+
+    result.reason =
+      "No injectable parameters found.";
+
+    return result;
+
+  }
+
+  result.tested = true;
 
   for (const parameter of parameters) {
 
     for (const payload of PAYLOADS) {
 
-      tested++;
+      const originalRequest =
+        cloneRequest(httpRequest);
 
-      const modifiedRequest =
+      const mutatedRequest =
         injectParameter(
           httpRequest,
           parameter,
           payload
         );
 
+      const originalResponse =
+        await replay(originalRequest);
 
-      let response;
-
-      try {
-
-        response = await replay(modifiedRequest);
-
-      } catch (_) {
-
-        continue;
-
-      }
-
-
-      const body =
-        response.body ||
-        "";
-
-
-      const matches =
-        collectFingerprintMatches(body);
-
-
+      const mutatedResponse =
+        await replay(mutatedRequest);
       const comparison =
         comparator.compare(
-          httpRequest,
-          response
+          originalResponse,
+          mutatedResponse
         );
 
+      const detectedFingerprints =
+        fingerprints.detect(
+          mutatedResponse.body
+        );
 
-      const score =
-        scorer.score({
+      const assessment =
+        scorer.score(
+          comparison,
+          detectedFingerprints
+        );
 
-          matches,
-          comparison
+      evidence.push({
 
-        });
+        parameter:
+          parameter.name,
 
+        location:
+          parameter.location,
 
-      if (score > 0) {
+        payload,
 
-        findings.push({
+        comparison,
 
-          parameter,
-          payload,
+        fingerprints:
+          detectedFingerprints,
 
-          evidence: {
+        score:
+          assessment.score,
 
-            fingerprints: matches,
+        confidence:
+          assessment.confidence,
 
-            status:
-              response.status,
+        verdict:
+          assessment.verdict,
 
-            score
+        reasons:
+          assessment.reasons,
 
-          }
+        originalBody:
+          originalResponse.body,
 
-        });
+        mutatedBody:
+          mutatedResponse.body
 
-      }
+      });
 
     }
 
   }
+  result.metadata.statistics = {
 
+    tested:
+      evidence.length,
 
-  return createResult({
+    confirmed:
+      evidence.filter(
+        finding =>
+          finding.verdict === "confirmed"
+      ).length,
 
-    vulnerability:
-      "Path Traversal",
+    review:
+      evidence.filter(
+        finding =>
+          finding.verdict === "needs_manual_review"
+      ).length
 
-    tested,
+  };
 
-    findings,
+  if (!evidence.length) {
 
-    summary: {
+    result.reason =
+      "No findings generated.";
 
-      parameters:
-        parameters.length,
+  }
 
-      payloads:
-        PAYLOADS.length,
-
-      findings:
-        findings.length
-
-    },
-
-    statistics: {
-
-      requests:
-        tested,
-
-      confirmed:
-        findings.length
-
-    }
-
-  });
+  return result;
 
 }
-/*
-|--------------------------------------------------------------------------
-| Export
-|--------------------------------------------------------------------------
-*/
 
 module.exports = {
 
-  scan: scanPathTraversal,
-
-  scanPathTraversal,
-
-  discoverParameters
+  scan:
+    scanPathTraversal
 
 };
