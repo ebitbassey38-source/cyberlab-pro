@@ -1,0 +1,86 @@
+const axios = require('axios');
+const { createResult } =
+  require('./baseEngine');
+function extractNumericIds(url) {
+  const matches = url.match(/\d+/g);
+  return matches || [];
+}
+
+function replaceLastNumericId(url, newId) {
+  return url.replace(/(\d+)(?!.*\d)/, newId);
+}
+
+async function scan(httpRequest) {
+  const result = createResult("idor");
+
+  const evidence = result.evidence;
+
+  const ids = extractNumericIds(httpRequest.url);
+
+  if (ids.length === 0) {
+    return {
+      tested: false,
+      reason: "No numeric object identifier found.",
+      evidence
+    };
+  }
+
+  const originalUrl = httpRequest.url;
+
+  const originalResponse = await axios({
+    method: httpRequest.method,
+    url: originalUrl,
+    headers: httpRequest.headers || {},
+    data: httpRequest.body || {},
+    validateStatus: () => true,
+    timeout: 8000
+  });
+
+  for (let newId = 2; newId <= 4; newId++) {
+
+    const mutatedUrl = replaceLastNumericId(originalUrl, newId);
+
+    const mutatedResponse = await axios({
+      method: httpRequest.method,
+      url: mutatedUrl,
+      headers: httpRequest.headers || {},
+      data: httpRequest.body || {},
+      validateStatus: () => true,
+      timeout: 8000
+    });
+
+    evidence.push({
+  original: originalUrl,
+  mutated: mutatedUrl,
+
+  originalStatus: originalResponse.status,
+  mutatedStatus: mutatedResponse.status,
+
+  originalLength: JSON.stringify(originalResponse.data).length,
+  mutatedLength: JSON.stringify(mutatedResponse.data).length,
+
+  originalBody: originalResponse.data,
+  mutatedBody: mutatedResponse.data,
+
+  sameStatus:
+    originalResponse.status === mutatedResponse.status,
+
+  sameLength:
+    JSON.stringify(originalResponse.data).length ===
+    JSON.stringify(mutatedResponse.data).length,
+
+  bodyChanged:
+    JSON.stringify(originalResponse.data) !==
+    JSON.stringify(mutatedResponse.data)
+});
+  }
+
+  return {
+    tested: true,
+    evidence
+  };
+}
+
+module.exports = {
+  scan
+};

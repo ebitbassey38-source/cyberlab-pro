@@ -4,7 +4,7 @@ const dns = require('dns').promises;
 const axios = require('axios');
 const tls = require('tls');
 const { askClaude } = require('../services/claude');
-
+const auth = require('../middleware/auth');
 // Real SSL checker
 function checkSSL(host) {
   return new Promise((resolve) => {
@@ -48,7 +48,7 @@ async function fetchSecurityHeaders(host) {
 }
 }
 
-router.post('/analyze', async (req, res) => {
+router.post('/analyze', auth, async (req, res) => {
   const { target } = req.body;
   if (!target) return res.status(400).json({ error: 'Target is required' });
 

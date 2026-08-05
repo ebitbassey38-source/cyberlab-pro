@@ -1,0 +1,17 @@
+exports.register = async (req, res) => {
+  res.json({
+    message: 'Register controller works'
+  });
+};
+
+exports.login = async (req, res) => {
+  res.json({
+    message: 'Login controller works'
+  });
+};
+
+exports.profile = async (req, res) => {
+  res.json({
+    message: 'Profile controller works'
+  });
+};
