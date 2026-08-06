@@ -12,70 +12,22 @@ const comparator =
 
 const scorer =
   require("./xxe/scorer");
-
+const {
+  discoverParameters,
+  cloneRequest
+} = require("./common/requestHelpers");
 /*
 |--------------------------------------------------------------------------
 | Parameter Discovery
 |--------------------------------------------------------------------------
 */
 
-function discoverParameters(httpRequest) {
-
-  const parameters = [];
-
-  try {
-
-    const url = new URL(httpRequest.url);
-
-    for (const [key, value] of url.searchParams.entries()) {
-
-      parameters.push({
-
-        location: "query",
-        name: key,
-        value
-
-      });
-
-    }
-
-  } catch (_) {}
-
-  if (
-    httpRequest.body &&
-    typeof httpRequest.body === "object"
-  ) {
-
-    for (const [key, value] of Object.entries(httpRequest.body)) {
-
-      parameters.push({
-
-        location: "body",
-        name: key,
-        value
-
-      });
-
-    }
-
-  }
-
-  return parameters;
-
-}
 /*
 |--------------------------------------------------------------------------
 | Helpers
 |--------------------------------------------------------------------------
 */
 
-function cloneRequest(request) {
-
-  return JSON.parse(
-    JSON.stringify(request)
-  );
-
-}
 
 function replaceQueryParameter(
   urlString,
