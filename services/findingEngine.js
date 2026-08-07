@@ -106,20 +106,17 @@ async function saveConfirmedFindings(scanResult) {
 
     } else {
 
-        const confirmed =
-          Array.isArray(result.scanResult.findings) &&
-          result.scanResult.findings.length > 0
-            ? result.scanResult.findings.length
-            : (result.scanResult.evidence || [])
-                .filter(
-                  e => e.verdict === config.scanVerdict
-                ).length;
+      const confirmed =
+        (result.scanResult.evidence || [])
+          .filter(
+            e => e.verdict === config.scanVerdict
+          ).length;
 
-        if (!confirmed) {
-          continue;
-        }
-
+      if (!confirmed) {
+        continue;
       }
+
+    }
 
     const finding =
       await Finding.create({
