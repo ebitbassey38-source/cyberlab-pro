@@ -157,12 +157,30 @@ async function scanPathTraversal(httpRequest) {
 
   };
 
-  if (!evidence.length) {
+    if (!evidence.length) {
 
     result.reason =
       "No findings generated.";
 
   }
+
+  const confirmedEvidence = evidence.filter(
+    finding =>
+      finding.verdict === "confirmed"
+  );
+
+  result.findings = confirmedEvidence.length
+    ? [{
+        title: "Possible Path Traversal",
+        type: "path_traversal",
+        severity: "high",
+        description:
+          "Path traversal testing produced confirmed evidence that user-controlled path input may access files outside the intended directory.",
+        evidence: confirmedEvidence,
+        recommendation:
+          "Canonicalize and validate file paths, restrict access to an approved directory, reject traversal sequences, and enforce server-side authorization."
+      }]
+    : [];
 
   return result;
 
