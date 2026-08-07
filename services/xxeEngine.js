@@ -265,6 +265,18 @@ async function scan(httpRequest) {
       ? "XXE analysis completed."
       : "No XXE evidence collected.";
 
+result.findings = evidence
+  .filter(e => e.verdict === "confirmed")
+  .map(e => ({
+    type: "XXE",
+    severity: "High",
+    confidence: e.confidence,
+    parameter: e.parameter,
+    location: e.location,
+    payload: e.payload,
+    score: e.score,
+    reasons: e.reasons
+  }));
   return result;
 
 }
