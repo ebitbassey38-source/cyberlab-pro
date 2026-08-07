@@ -45,8 +45,8 @@ module.exports = [
   },
 
   {
-    name: "pathTraversal",
-    engine: pathTraversalEngine
-  }
+  name: "path_traversal",
+  engine: pathTraversalEngine
+}
 
 ];
