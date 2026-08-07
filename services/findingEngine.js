@@ -91,7 +91,7 @@ async function saveConfirmedFindings(scanResult) {
     const config =
       FINDING_CONFIG[result.module];
 
-   if (!config) {
+    if (!config) {
       continue;
     }
 
@@ -106,14 +106,20 @@ async function saveConfirmedFindings(scanResult) {
 
     } else {
 
-      if (
-        result.scanResult.verdict !==
-        config.scanVerdict
-      ) {
-        continue;
-      }
+        const confirmed =
+          Array.isArray(result.scanResult.findings) &&
+          result.scanResult.findings.length > 0
+            ? result.scanResult.findings.length
+            : (result.scanResult.evidence || [])
+                .filter(
+                  e => e.verdict === config.scanVerdict
+                ).length;
 
-    }
+        if (!confirmed) {
+          continue;
+        }
+
+      }
 
     const finding =
       await Finding.create({
