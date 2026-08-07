@@ -248,9 +248,22 @@ result.metadata.statistics = {
       e => e.verdict ===
         "no_issue"
     ).length
-
 };
-  return result;
+result.findings = evidence
+  .filter(e => e.verdict === "confirmed")
+  .map(e => ({
+    type: "SQL Injection",
+    severity: "High",
+    confidence: e.confidence,
+    parameter: e.parameter,
+    location: e.location,
+    payload: e.payload,
+    score: e.score,
+    fingerprints: e.fingerprints,
+    reasons: e.reasons
+  }));
+
+return result;
 
 }
 
