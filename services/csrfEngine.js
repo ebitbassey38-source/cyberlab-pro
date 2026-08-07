@@ -254,6 +254,18 @@ async function scan(httpRequest) {
       ? "CSRF analysis completed."
       : "No CSRF evidence collected.";
 
+result.findings = evidence
+  .filter(e => e.verdict === "confirmed")
+  .map(e => ({
+    type: "CSRF",
+    severity: "High",
+    confidence: e.confidence,
+    parameter: e.parameter,
+    location: e.location,
+    payload: e.payload,
+    score: e.score,
+    reasons: e.reasons
+  }));
   return result;
 
 }
