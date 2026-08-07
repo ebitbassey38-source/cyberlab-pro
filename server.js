@@ -22,6 +22,7 @@ app.use(express.static('public'));
 app.use('/api/dirscan', require('./routes/dirscan'));
 app.use('/api/sqli', require('./routes/sqli'));
 app.use('/api/xss', require('./routes/xss'));
+app.use('/api/lab', require('./routes/lab'));
 app.use('/api/auth', require('./routes/authtest'));
 app.use('/api/user', require('./routes/auth'));
 app.use('/api/organization', require('./routes/organization'));
