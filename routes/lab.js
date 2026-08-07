@@ -40,4 +40,22 @@ router.get("/sqli", (req, res) => {
   });
 
 });
+router.get("/xss", (req, res) => {
+
+  const input = req.query.id || "";
+
+  res.type("html").send(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>CyberLab XSS Training Lab</title>
+      </head>
+      <body>
+        <h1>Demo User</h1>
+        <div id="result">${input}</div>
+      </body>
+    </html>
+  `);
+
+});
 module.exports = router;
