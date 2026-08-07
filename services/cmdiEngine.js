@@ -265,6 +265,18 @@ async function scan(httpRequest) {
       ? "Command Injection analysis completed."
       : "No Command Injection evidence collected.";
 
+result.findings = evidence
+  .filter(e => e.verdict === "confirmed")
+  .map(e => ({
+    type: "Command Injection",
+    severity: "High",
+    confidence: e.confidence,
+    parameter: e.parameter,
+    location: e.location,
+    payload: e.payload,
+    score: e.score,
+    reasons: e.reasons
+  }));
   return result;
 
 }
