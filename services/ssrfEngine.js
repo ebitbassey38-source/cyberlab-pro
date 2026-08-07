@@ -266,6 +266,18 @@ async function scan(httpRequest) {
       ? "SSRF analysis completed."
       : "No SSRF evidence collected.";
 
+result.findings = evidence
+  .filter(e => e.verdict === "confirmed")
+  .map(e => ({
+    type: "SSRF",
+    severity: "High",
+    confidence: e.confidence,
+    parameter: e.parameter,
+    location: e.location,
+    payload: e.payload,
+    score: e.score,
+    reasons: e.reasons
+  }));
   return result;
 
 }
