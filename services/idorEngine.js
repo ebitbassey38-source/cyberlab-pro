@@ -75,7 +75,28 @@ async function scan(httpRequest) {
 });
   }
 
+    const confirmedEvidence = evidence.filter(
+    e =>
+      !e.sameStatus ||
+      !e.sameLength ||
+      e.bodyChanged
+  );
+
+  result.findings = confirmedEvidence.length
+    ? [{
+        title: "Possible Insecure Direct Object Reference (IDOR)",
+        type: "idor",
+        severity: "high",
+        description:
+          "Changing a numeric object identifier produced a different response, indicating a possible IDOR vulnerability.",
+        evidence: confirmedEvidence,
+        recommendation:
+          "Enforce server-side authorization checks for every object access and verify that the authenticated user is permitted to access the requested resource."
+      }]
+    : [];
+
   return {
+    ...result,
     tested: true,
     evidence
   };
