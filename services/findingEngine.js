@@ -131,9 +131,10 @@ async function saveConfirmedFindings(scanResult) {
           config.description,
 
         evidence:
-          JSON.stringify(
-            result.scanResult.evidence
-          ),
+  JSON.stringify({
+    replayEvidence: result.scanResult.evidence,
+    authorization: result.authorization
+  }),
 
         recommendation:
           config.recommendation,

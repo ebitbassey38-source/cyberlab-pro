@@ -1,13 +1,22 @@
 const axios = require('axios');
 const { createResult } =
   require('./baseEngine');
+
 function extractNumericIds(url) {
-  const matches = url.match(/\d+/g);
+  const parsed = new URL(url);
+  const matches = parsed.pathname.match(/\d+/g);
   return matches || [];
 }
 
 function replaceLastNumericId(url, newId) {
-  return url.replace(/(\d+)(?!.*\d)/, newId);
+  const parsed = new URL(url);
+
+  parsed.pathname = parsed.pathname.replace(
+    /(\d+)(?!.*\d)/,
+    String(newId)
+  );
+
+  return parsed.toString();
 }
 
 async function scan(httpRequest) {
