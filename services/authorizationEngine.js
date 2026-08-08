@@ -1,11 +1,18 @@
 const AuthorizationContext =
   require('../models/AuthorizationContext');
-async function verify(scanResult, scanJobId) {
+async function verify(scanResult, scanJobId, httpRequestId) {
   const evidence = scanResult.evidence || [];
-const contexts =
-  await AuthorizationContext.find({
-    scanJob: scanJobId
-  });
+const contexts = await AuthorizationContext.find({
+  scanJob: scanJobId
+}).lean();
+
+const contextByRequest = new Map(
+  contexts.map(context => [
+    context.httpRequest.toString(),
+    context
+  ])
+);
+
   if (!evidence.length) {
     return {
   verdict: "no_issue",
@@ -17,11 +24,29 @@ const contexts =
 };
   }
 
-  const suspicious = evidence.some(e => {
+  const context = contextByRequest.get(httpRequestId.toString());
+
+if (!context) {
+  return {
+    verdict: "needs_manual_review",
+    confidence: "low",
+    score: 20,
+    reasons: [
+      "No authorization context found for this HTTP request."
+    ]
+  };
+}
+
+const suspicious = evidence.some(e => {
+  const expectedOwner = e.originalBody?.owner;
+  const mutatedOwner = e.mutatedBody?.owner;
+
   return (
     e.sameStatus &&
     e.bodyChanged &&
-    !e.sameLength
+    expectedOwner &&
+    mutatedOwner &&
+    mutatedOwner !== expectedOwner
   );
 });
 
@@ -43,7 +68,8 @@ const contexts =
   reasons: [
     "Response body changed.",
     "HTTP status remained successful.",
-    "Ownership could not be verified automatically."
+    "Mutated object owner differs from the expected owner.",
+    "Object-level authorization requires analyst confirmation."
   ]
 };
 }
