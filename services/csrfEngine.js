@@ -28,39 +28,6 @@ const {
 |--------------------------------------------------------------------------
 */
 
-function replaceQueryParameter(
-  urlString,
-  parameter,
-  payload
-) {
-
-  const url = new URL(urlString);
-
-  url.searchParams.set(
-    parameter,
-    payload
-  );
-
-  return url.toString();
-
-}
-
-function replaceBodyParameter(
-  body,
-  parameter,
-  payload
-) {
-
-  const copy =
-    JSON.parse(
-      JSON.stringify(body)
-    );
-
-  copy[parameter] = payload;
-
-  return copy;
-
-}
 /*
 |--------------------------------------------------------------------------
 | CSRF Scan Engine
@@ -120,17 +87,31 @@ async function scan(httpRequest) {
         const mutatedResponse =
           await replay(mutatedRequest);
 
-        const comparison =
-          comparator.compare(
-            originalResponse,
-            mutatedResponse
-          );
+        const unsupportedMethod =
+  mutatedResponse.status === 404 ||
+  mutatedResponse.status === 405 ||
+  (
+    typeof mutatedResponse.body === "string" &&
+    /Cannot (GET|POST|PUT|PATCH|DELETE|OPTIONS|HEAD)/i.test(
+      mutatedResponse.body
+    )
+  );
 
-        const detectedFingerprints =
-          fingerprints.detect(
-            mutatedResponse.headers,
-            mutatedResponse.body
-          );
+if (unsupportedMethod) {
+  continue;
+}
+
+const comparison =
+  comparator.compare(
+    originalResponse,
+    mutatedResponse
+  );
+
+const detectedFingerprints =
+  fingerprints.detect(
+    mutatedResponse.headers,
+    mutatedResponse.body
+  );
 
         const assessment =
           scorer.score(
