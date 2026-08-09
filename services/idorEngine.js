@@ -2,29 +2,15 @@ const axios = require('axios');
 const { createResult } =
   require('./baseEngine');
 
-function extractNumericIds(url) {
-  const parsed = new URL(url);
-  const matches = parsed.pathname.match(/\d+/g);
-  return matches || [];
-}
-
-function replaceLastNumericId(url, newId) {
-  const parsed = new URL(url);
-
-  parsed.pathname = parsed.pathname.replace(
-    /(\d+)(?!.*\d)/,
-    String(newId)
-  );
-
-  return parsed.toString();
-}
-
 async function scan(httpRequest) {
   const result = createResult("idor");
 
   const evidence = result.evidence;
 
-  const ids = extractNumericIds(httpRequest.url);
+  const ids =
+    new URL(httpRequest.url)
+      .pathname
+      .match(/\d+/g) || [];
 
   if (ids.length === 0) {
     return {
@@ -47,7 +33,11 @@ async function scan(httpRequest) {
 
   for (let newId = 2; newId <= 4; newId++) {
 
-    const mutatedUrl = replaceLastNumericId(originalUrl, newId);
+      const mutatedUrl =
+        new URL(originalUrl.replace(
+          /(\d+)(?!.*\d)/,
+          String(newId)
+        )).toString();
 
     const mutatedResponse = await axios({
       method: httpRequest.method,
