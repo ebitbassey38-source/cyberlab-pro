@@ -11,11 +11,11 @@ async function run(requests, scanJobId) {
     const scanResult =
       await entry.engine.scan(request);
 
-    const authorization =
-      await authorizationEngine.verify(
-        scanResult,
-        scanJobId
-      );
+    const authorization = await authorizationEngine.verify(
+  scanResult,
+  scanJobId,
+  request._id
+);
 
     results.push({
       requestId: request._id,

@@ -4,8 +4,17 @@
 |--------------------------------------------------------------------------
 */
 
-function compare(original, mutated) {
+function getContentType(response) {
+  const headers = response.headers || {};
 
+  return (
+    headers["content-type"] ||
+    headers["Content-Type"] ||
+    ""
+  ).toLowerCase();
+}
+
+function compare(original, mutated) {
   const originalBody =
     JSON.stringify(original.body || {});
 
@@ -13,7 +22,6 @@ function compare(original, mutated) {
     JSON.stringify(mutated.body || {});
 
   return {
-
     sameStatus:
       original.status === mutated.status,
 
@@ -33,10 +41,17 @@ function compare(original, mutated) {
       Math.abs(
         originalBody.length -
         mutatedBody.length
-      )
+      ),
 
+    originalContentType:
+      getContentType(original),
+
+    mutatedContentType:
+      getContentType(mutated),
+
+    isHtmlResponse:
+      getContentType(mutated).includes("text/html")
   };
-
 }
 
 module.exports = {

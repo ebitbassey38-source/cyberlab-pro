@@ -34,11 +34,14 @@ const analyzeEndpoints = async (apiRecon, requests) => {
         "Endpoint contains a numeric object identifier.";
     }
 
-    if (endpoint.authentication) {
-      analysis.modules.auth.candidate = true;
-      analysis.modules.auth.evidence =
-        "Authenticated endpoint detected.";
-    }
+    if (
+  endpoint.authentication &&
+  endpoint.authentication !== "none"
+) {
+  analysis.modules.auth.candidate = true;
+  analysis.modules.auth.evidence =
+    "Authenticated endpoint detected.";
+}
 
     if (
       endpoint.url.includes("?") ||
@@ -51,13 +54,14 @@ const analyzeEndpoints = async (apiRecon, requests) => {
     }
 
     if (
-      endpoint.method === "POST" ||
-      endpoint.method === "PUT"
-    ) {
-      analysis.modules.xss.candidate = true;
-      analysis.modules.xss.evidence =
-        "Endpoint may reflect user input.";
-    }
+  endpoint.url.includes("?") ||
+  endpoint.method === "POST" ||
+  endpoint.method === "PUT"
+) {
+  analysis.modules.xss.candidate = true;
+  analysis.modules.xss.evidence =
+    "Endpoint may reflect user input.";
+}
 const request = requests.find(
   r =>
     r.url === endpoint.url &&

@@ -5,7 +5,6 @@
 */
 
 function score(comparison, fingerprints) {
-
   let score = 0;
 
   const reasons = [];
@@ -31,41 +30,44 @@ function score(comparison, fingerprints) {
   }
 
   if (fingerprints.length) {
-
     score += 40;
 
     reasons.push(
       "SQL error fingerprint detected"
     );
-
   }
 
   let verdict = "no_issue";
 
-  if (score >= 70) {
+  /*
+   * A fingerprint by itself is not enough to confirm SQLi.
+   * Require an HTTP status change as corroborating evidence.
+   */
+  const strongErrorEvidence =
+    fingerprints.length > 0 &&
+    !comparison.sameStatus;
+
+  if (strongErrorEvidence && score >= 70) {
     verdict = "confirmed";
   }
-  else if (score >= 40) {
+  else if (fingerprints.length || score >= 40) {
     verdict = "needs_manual_review";
   }
 
   return {
-
     score,
 
     confidence:
-      score >= 70
+      verdict === "confirmed"
         ? "high"
-        : score >= 40
+        : verdict === "needs_manual_review"
         ? "medium"
         : "low",
 
     verdict,
 
     reasons
-
   };
-
 }
 
 module.exports = {
