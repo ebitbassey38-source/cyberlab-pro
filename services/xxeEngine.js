@@ -29,39 +29,6 @@ const {
 */
 
 
-function replaceQueryParameter(
-  urlString,
-  parameter,
-  payload
-) {
-
-  const url = new URL(urlString);
-
-  url.searchParams.set(
-    parameter,
-    payload
-  );
-
-  return url.toString();
-
-}
-
-function replaceBodyParameter(
-  body,
-  parameter,
-  payload
-) {
-
-  const copy =
-    JSON.parse(
-      JSON.stringify(body)
-    );
-
-  copy[parameter] = payload;
-
-  return copy;
-
-}
 /*
 |--------------------------------------------------------------------------
 | XXE Scan Engine
