@@ -144,10 +144,12 @@ async function scan(httpRequest) {
           );
 
         const detectedFingerprints =
-          fingerprints.detect(
-            mutatedResponse.body,
-            payload
-          );
+          comparison.isHtmlResponse
+            ? fingerprints.detect(
+                mutatedResponse.body,
+                payload
+              )
+            : [];
 
         const assessment =
           scorer.score(
