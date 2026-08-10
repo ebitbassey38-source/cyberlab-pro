@@ -34,7 +34,8 @@ for (const request of requests) {
   await AuthorizationContext.create({
     scanJob: scanJob._id,
     httpRequest: request._id,
-    authenticationType: request.authentication
+    authenticationType: request.authentication,
+    expectedOwner: request.body?.owner || null
   });
 }
   // Placeholder for API Recon
