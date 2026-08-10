@@ -1,5 +1,5 @@
 const idorEngine = require('./idorEngine');
-const analyzeEndpoints = async (apiRecon, requests) => {
+const analyzeEndpoints = async (apiRecon) => {
   const results = [];
 
   for (const endpoint of apiRecon.endpoints) {
@@ -61,15 +61,7 @@ const analyzeEndpoints = async (apiRecon, requests) => {
   analysis.modules.xss.evidence =
     "Endpoint may reflect user input.";
 }
-const request = requests.find(
-  r =>
-    r.url === endpoint.url &&
-    r.method === endpoint.method
-);
 
-if (request) {
-
-}
     results.push(analysis);
   }
 
