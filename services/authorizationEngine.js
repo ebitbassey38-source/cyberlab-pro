@@ -38,8 +38,11 @@ if (!context) {
 }
 
 const suspicious = evidence.some(e => {
-  const expectedOwner = e.originalBody?.owner;
-  const mutatedOwner = e.mutatedBody?.owner;
+  const expectedOwner =
+    context.expectedOwner;
+
+  const mutatedOwner =
+    e.mutatedBody?.owner;
 
   return (
     e.sameStatus &&
