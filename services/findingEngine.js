@@ -67,15 +67,26 @@ const FINDING_CONFIG = {
   },
 
   path_traversal: {
-    title: "Possible Path Traversal",
-    type: "path_traversal",
-    severity: "high",
-    description:
-      "Replay analysis detected behavior consistent with path traversal.",
-    recommendation:
-      "Canonicalize paths, restrict file access to approved directories, and reject traversal sequences.",
-    scanVerdict: "confirmed"
-  }
+  title: "Possible Path Traversal",
+  type: "path_traversal",
+  severity: "high",
+  description:
+    "Replay analysis detected behavior consistent with path traversal.",
+  recommendation:
+    "Canonicalize paths, restrict file access to approved directories, and reject traversal sequences.",
+  scanVerdict: "confirmed"
+},
+
+xxe: {
+  title: "Possible XML External Entity (XXE)",
+  type: "xxe",
+  severity: "high",
+  description:
+    "Replay analysis detected behavior consistent with XML External Entity processing.",
+  recommendation:
+    "Disable external entity processing and DTDs in XML parsers and use secure XML parser configurations.",
+  scanVerdict: "confirmed"
+}
 };
 async function saveConfirmedFindings(scanResult) {
 
