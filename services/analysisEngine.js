@@ -1,5 +1,4 @@
 const idorEngine = require('./idorEngine');
-const authorizationEngine = require('./authorizationEngine');
 const analyzeEndpoints = async (apiRecon, requests) => {
   const results = [];
 
