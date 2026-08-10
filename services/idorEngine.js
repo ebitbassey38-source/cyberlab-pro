@@ -1,4 +1,9 @@
-const axios = require('axios');
+const { replay } =
+  require('./requestReplay');
+
+const { cloneRequest } =
+  require('./common/requestHelpers');
+
 const { createResult } =
   require('./baseEngine');
 
@@ -22,14 +27,8 @@ async function scan(httpRequest) {
 
   const originalUrl = httpRequest.url;
 
-  const originalResponse = await axios({
-    method: httpRequest.method,
-    url: originalUrl,
-    headers: httpRequest.headers || {},
-    data: httpRequest.body || {},
-    validateStatus: () => true,
-    timeout: 8000
-  });
+  const originalResponse =
+    await replay(httpRequest);
 
   for (let newId = 2; newId <= 4; newId++) {
 
@@ -39,14 +38,14 @@ async function scan(httpRequest) {
           String(newId)
         )).toString();
 
-    const mutatedResponse = await axios({
-      method: httpRequest.method,
-      url: mutatedUrl,
-      headers: httpRequest.headers || {},
-      data: httpRequest.body || {},
-      validateStatus: () => true,
-      timeout: 8000
-    });
+    const mutatedRequest =
+      cloneRequest(httpRequest);
+
+    mutatedRequest.url =
+      mutatedUrl;
+
+    const mutatedResponse =
+      await replay(mutatedRequest);
 
     evidence.push({
   original: originalUrl,
