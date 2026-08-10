@@ -47,10 +47,6 @@ for (const request of requests) {
     }))
   };
 
-  // Finish scan
-  scanJob.status = 'completed';
-  scanJob.finishedAt = new Date();
-  await scanJob.save();
 
  const analysis = await analysisEngine.analyzeEndpoints(
   apiRecon,
@@ -66,6 +62,10 @@ const findings = await findingEngine.saveConfirmedFindings({
   analysis,
   dynamicResults
 });
+
+scanJob.status = 'completed';
+scanJob.completedAt = new Date();
+await scanJob.save();
 return {
   scanJob,
   asset,
