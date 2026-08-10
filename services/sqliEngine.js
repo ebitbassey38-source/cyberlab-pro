@@ -12,8 +12,10 @@ const scorer =
   require("./sqli/scorer");
 const {
   discoverParameters,
-  cloneRequest
+  cloneRequest,
+  injectParameter
 } = require("./common/requestHelpers");
+
 /*
 |--------------------------------------------------------------------------
 | SQL Injection Payload Library
@@ -35,25 +37,7 @@ const {
 |--------------------------------------------------------------------------
 */
 
-function replaceQueryParameter(urlString, parameter, payload) {
 
-  const url = new URL(urlString);
-
-  url.searchParams.set(parameter, payload);
-
-  return url.toString();
-
-}
-
-function replaceBodyParameter(body, parameter, payload) {
-
-  const copy = JSON.parse(JSON.stringify(body));
-
-  copy[parameter] = payload;
-
-  return copy;
-
-}
 /*
 |--------------------------------------------------------------------------
 | SQL Injection Scan Engine
@@ -90,32 +74,11 @@ async function scan(httpRequest) {
           cloneRequest(httpRequest);
 
         const mutatedRequest =
-          cloneRequest(httpRequest);
-
-        if (parameter.location === "query") {
-
-          mutatedRequest.url =
-            replaceQueryParameter(
-              mutatedRequest.url,
-              parameter.name,
-              payload
-            );
-
-        }
-
-        if (
-          parameter.location === "body" &&
-          mutatedRequest.body
-        ) {
-
-          mutatedRequest.body =
-            replaceBodyParameter(
-              mutatedRequest.body,
-              parameter.name,
-              payload
-            );
-
-        }
+          injectParameter(
+            httpRequest,
+            parameter,
+            payload
+          );
 
         const originalResponse =
           await replay(originalRequest);
