@@ -48,10 +48,10 @@ for (const request of requests) {
   };
 
 
- const analysis = await analysisEngine.analyzeEndpoints(
-  apiRecon,
-  requests
-);
+ const analysis =
+  await analysisEngine.analyzeEndpoints(
+    apiRecon
+  );
 const dynamicResults =
   await dynamicScanEngine.run(
     requests,
