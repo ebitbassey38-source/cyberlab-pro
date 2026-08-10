@@ -14,7 +14,8 @@ const scorer =
   require("./cmdi/scorer");
 const {
   discoverParameters,
-  cloneRequest
+  cloneRequest,
+  injectParameter
 } = require("./common/requestHelpers");
 /*
 |--------------------------------------------------------------------------
@@ -70,31 +71,11 @@ async function scan(httpRequest) {
           cloneRequest(httpRequest);
 
         const mutatedRequest =
-          cloneRequest(httpRequest);
-        if (parameter.location === "query") {
-
-          mutatedRequest.url =
-            replaceQueryParameter(
-              mutatedRequest.url,
-              parameter.name,
-              payload
-            );
-
-        }
-
-        if (
-          parameter.location === "body" &&
-          mutatedRequest.body
-        ) {
-
-          mutatedRequest.body =
-            replaceBodyParameter(
-              mutatedRequest.body,
-              parameter.name,
-              payload
-            );
-
-        }
+          injectParameter(
+            httpRequest,
+            parameter,
+            payload
+          );
 
         const originalResponse =
           await replay(originalRequest);
