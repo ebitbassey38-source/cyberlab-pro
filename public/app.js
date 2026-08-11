@@ -352,37 +352,134 @@ function runSQLiScan() {
 }
 
 async function runXSSScan() {
- const target = document.getElementById("xss-target").value;
+  const target = document.getElementById("xss-target").value.trim();
 
-  document.getElementById("xss-results").innerHTML =
-    "<div class='loading'>Scanning...</div>";
+  if (!target) {
+    alert("Enter a target URL");
+    return;
+  }
 
-  const res = await fetch("/api/xss/scan", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ target })
-  });
+  loading("xss-results");
 
-  const data = await res.json();
+  try {
+    const res = await fetch("/api/xss/scan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ target })
+    });
 
-  document.getElementById("xss-results").innerHTML =
-    `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    const data = await res.json();
+
+    let html = "";
+
+    if (data.findings && data.findings.length > 0) {
+      data.findings.forEach(function(f) {
+        html += '<div class="finding">';
+        html += '<div class="finding-header">';
+        html += '<strong>' + (f.type || "XSS Finding") + '</strong>';
+        html += '</div>';
+
+        if (f.param) {
+          html += '<div class="finding-detail">Parameter: ' + f.param + '</div>';
+        }
+
+        if (f.payload) {
+          html += '<div class="finding-vector">Payload: ' + f.payload + '</div>';
+        }
+
+        if (f.evidence) {
+          html += '<div class="finding-detail">Evidence: ' + f.evidence + '</div>';
+        }
+
+        html += '</div>';
+      });
+    } else {
+      html += '<div class="card">';
+      html += '<p style="color:#6b7280">No XSS findings detected.</p>';
+      html += '</div>';
+    }
+
+    if (data.aiAnalysis) {
+      html += aiBox(data.aiAnalysis);
+    }
+
+    show("xss-results", html);
+  } catch (e) {
+    show(
+      "xss-results",
+      '<p style="color:#ef4444">Error: ' + e.message + '</p>'
+    );
+  }
 }
 
 async function runIDORScan() {
-  const target = document.getElementById("idor-target").value;
+  const target = document.getElementById("idor-target").value.trim();
 
-  document.getElementById("idor-results").innerHTML =
-    "<div class='loading'>Scanning...</div>";
+  if (!target) {
+    alert("Enter a target URL");
+    return;
+  }
 
-  const res = await fetch("/api/idor/scan", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ target })
-  });
+  loading("idor-results");
 
-  const data = await res.json();
+  try {
+    const res = await fetch("/api/idor/scan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ target })
+    });
 
-  document.getElementById("idor-results").innerHTML =
-    `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    const data = await res.json();
+
+    let html = "";
+
+    if (data.findings && data.findings.length > 0) {
+      data.findings.forEach(function(f) {
+        html += '<div class="finding">';
+        html += '<div class="finding-header">';
+        html += '<strong>' + (f.type || "IDOR Finding") + '</strong>';
+        html += '</div>';
+
+        if (f.endpoint) {
+          html += '<div class="finding-detail">Endpoint: ' + f.endpoint + '</div>';
+        }
+
+        if (f.verdict) {
+          html += '<div class="finding-detail">Verdict: ' + f.verdict + '</div>';
+        }
+
+        if (f.confidence) {
+          html += '<div class="finding-detail">Confidence: ' + f.confidence + '</div>';
+        }
+
+        if (f.score !== undefined) {
+          html += '<div class="finding-vector">Score: ' + f.score + '</div>';
+        }
+
+        if (f.reasons && Array.isArray(f.reasons)) {
+          html += '<div class="finding-detail">Reasons: ' +
+            f.reasons.join(" ") +
+            '</div>';
+        }
+
+        html += '</div>';
+      });
+    } else {
+      html += '<div class="card">';
+      html += '<p style="color:#6b7280">No IDOR findings detected.</p>';
+      html += '</div>';
+    }
+
+    if (data.aiAnalysis) {
+      html += aiBox(data.aiAnalysis);
+    }
+
+    show("idor-results", html);
+
+  } catch (e) {
+    show(
+      "idor-results",
+      '<p style="color:#ef4444">Error: ' + e.message + '</p>'
+    );
+  }
 }
