@@ -779,3 +779,112 @@ body {
     font-size: 11px;
   }
 }
+/* Enhanced finding states */
+
+.finding.severity-critical {
+  border-left: 3px solid var(--red);
+}
+
+.finding.severity-high {
+  border-left: 3px solid #ea580c;
+}
+
+.finding.severity-medium {
+  border-left: 3px solid var(--yellow);
+}
+
+.finding.severity-low {
+  border-left: 3px solid var(--green);
+}
+
+.finding.severity-info {
+  border-left: 3px solid #2563eb;
+}
+
+.finding-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.confidence-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: #070d1a;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.scan-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.scan-summary-item {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--panel);
+}
+
+.scan-summary-label {
+  color: var(--dim);
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.scan-summary-value {
+  margin-top: 4px;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.ai-box-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.report-output {
+  margin-top: 14px;
+}
+
+.report-actions {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.report-action {
+  padding: 7px 11px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.report-action:hover {
+  border-color: rgba(0, 212, 255, 0.45);
+  color: var(--cyan);
+}
+
+@media (max-width: 700px) {
+  .scan-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

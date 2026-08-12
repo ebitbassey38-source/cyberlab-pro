@@ -82,21 +82,56 @@ router.post('/vuln', async (req, res) => {
     const { headers, status, error } = await fetchHeaders(target);
     findings = analyzeHeaders(headers, status);
   } else if (scanType === 'sqli') {
-    findings = [
-      { id: 1, type: 'SQLi Test Points', severity: 'info', detail: 'Manual testing recommended: try single quote in all input fields, look for database errors.', vector: 'Input Fields' },
-      { id: 2, type: 'Error-Based SQLi Vector', severity: 'medium', detail: "Test: ' OR '1'='1 in login forms. Check for MySQL/MSSQL error messages in response.", vector: 'Query Params' },
-    ];
-  } else if (scanType === 'xss') {
-    findings = [
-      { id: 1, type: 'XSS Test Points', severity: 'info', detail: 'Test all input fields with: <script>alert(1)</script>. Check if input is reflected unencoded.', vector: 'Input Fields' },
-      { id: 2, type: 'DOM XSS Check', severity: 'medium', detail: 'Review client-side JS for document.write(), innerHTML, eval() with user-controlled input.', vector: 'JavaScript' },
-    ];
-  }
+  findings = [
+    {
+      id: 1,
+      type: 'SQLi Manual Review Recommended',
+      severity: 'info',
+      detail: 'No SQL injection vulnerability was confirmed by this scan. Use the dedicated SQLi scanner for authorized parameter testing.',
+      vector: 'Recommendation'
+    }
+  ];
+} else if (scanType === 'xss') {
+  findings = [
+    {
+      id: 1,
+      type: 'XSS Manual Review Recommended',
+      severity: 'info',
+      detail: 'No XSS vulnerability was confirmed by this scan. Use the dedicated XSS scanner for authorized testing.',
+      vector: 'Recommendation'
+    }
+  ];
+}
 
-  const aiAnalysis = await askClaude(
-    'You are a senior bug bounty hunter and defensive security reviewer. Analyze only the provided scan findings. Never increase severity beyond the scanner rating. Never claim a vulnerability is exploitable unless confirmed by evidence. Missing security headers alone are not critical unless an actual impact is demonstrated. Clearly separate confirmed findings from recommendations.',
-    `Real scan results for target: ${target}\n\n${findings.map(f => `[${f.severity.toUpperCase()}] ${f.type}: ${f.detail}`).join('\n')}\n\nPrioritize top findings for a bounty report and suggest next manual steps. Be concise.`
-  );
+  let aiAnalysis;
+
+  if (scanType === 'headers' || scanType === 'full') {
+    aiAnalysis = findings.map(f => {
+      const severity = String(f.severity).toUpperCase();
+      const type = String(f.type);
+      const detail = String(f.detail);
+
+      if (type.startsWith('Missing ') &&
+          String(f.vector).toLowerCase() === 'http header') {
+        return `${severity} ${type}: ${detail} This scan establishes only that the header is missing; exploitability was not confirmed.`;
+      }
+
+      if (type === 'Server Header Disclosure') {
+        return `${severity} ${type}: ${detail} This scan establishes only the disclosed server header value; no vulnerability was confirmed from this observation alone.`;
+      }
+
+      return `${severity} ${type}: ${detail}`;
+    }).join('\\n');
+  } else {
+    aiAnalysis = await askClaude(
+      'You are a defensive security reviewer. Use ONLY the findings provided. Never invent or infer vulnerabilities, exploitability, URLs, parameters, code, PoCs, or severity levels. If the supplied findings do not confirm a vulnerability, say so clearly.',
+      `Real scan results for target: ${target}
+
+${findings.map(f => `[${f.severity.toUpperCase()}] ${f.type}: ${f.detail}`).join('\\n')}
+
+Keep the analysis concise and evidence-based.`
+    );
+  }
 
   res.json({ target, scanType, findings, aiAnalysis });
 });

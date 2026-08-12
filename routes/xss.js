@@ -32,8 +32,10 @@ async function testParameter(baseUrl, param, payload) {
       return {
         param,
         payload,
-        type: 'Reflected XSS',
-        severity: 'high',
+        type: 'Reflected Input',
+        severity: 'info',
+        detail: 'The payload was reflected in the HTTP response, but script execution was not confirmed.',
+        vector: 'HTTP Response',
         url
       };
     }
@@ -81,12 +83,17 @@ router.post('/scan', async (req, res) => {
   }
 
   const aiAnalysis = await askClaude(
-`You are a senior penetration tester.
+`You are a defensive XSS reviewer.
 
-Analyze ONLY the scan results provided.
-Never invent vulnerabilities.
-If no confirmed XSS exists, clearly say none were found.
-Keep the response concise.`,
+Use ONLY the scan results provided.
+Never invent vulnerabilities, URLs, parameters, payloads, code, PoCs, severity levels, or test results.
+
+If Confirmed findings is 0, respond with exactly:
+"No confirmed XSS vulnerability was identified by this scan."
+
+Do not add speculative vulnerabilities or unrelated security recommendations when there are zero findings.
+
+If findings exist, explain ONLY those supplied findings and do not upgrade their severity.`,
 `Target: ${target}
 
 Parameters tested: ${testParams.join(', ')}

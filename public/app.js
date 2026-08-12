@@ -85,9 +85,32 @@ function getFix(idx, platform) {
   content.innerHTML = '<div class="loading"><div class="spinner"></div>Generating fix for ' + platform + '...</div>';
   post('/api/fixguide/generate', { vulnerability: f, platform: platform, target: lastTarget })
     .then(function(data) {
-      content.innerHTML = '<div style="background:#070d1a;border:1px solid #1e2d40;border-radius:8px;padding:14px"><pre style="color:#c9d6e3;font-size:12px;line-height:1.7;white-space:pre-wrap;word-break:break-word;font-family:monospace;margin:0">' + data.fix + '</pre></div>';
+      var fixBox = document.createElement('div');
+fixBox.style.background = '#070d1a';
+fixBox.style.border = '1px solid #1e2d40';
+fixBox.style.borderRadius = '8px';
+fixBox.style.padding = '14px';
+
+var fixPre = document.createElement('pre');
+fixPre.style.color = '#c9d6e3';
+fixPre.style.fontSize = '12px';
+fixPre.style.lineHeight = '1.7';
+fixPre.style.whiteSpace = 'pre-wrap';
+fixPre.style.wordBreak = 'break-word';
+fixPre.style.fontFamily = 'monospace';
+fixPre.style.margin = '0';
+fixPre.textContent = data.fix;
+
+fixBox.appendChild(fixPre);
+content.replaceChildren(fixBox);
     })
-    .catch(function(e) { content.innerHTML = '<p style="color:#ef4444">Error: ' + e.message + '</p>'; });
+    .catch(function(e) {
+  reportDiv.replaceChildren();
+  var error = document.createElement('p');
+  error.style.color = '#ef4444';
+  error.textContent = 'Error: ' + e.message;
+  reportDiv.appendChild(error);
+});
 }
 
 function runVulnScan() {
@@ -121,9 +144,27 @@ function generateReport() {
   reportDiv.style.display = 'block';
   post('/api/report/generate', { target: lastTarget, findings: lastFindings })
     .then(function(data) {
-      reportDiv.innerHTML = '<div class="ai-box"><div class="ai-box-header">HackerOne Report</div><div class="ai-box-body">' + data.report + '</div></div>';
+    var box = document.createElement('div');
+box.className = 'ai-box';
+var header = document.createElement('div');
+header.className = 'ai-box-header';
+header.textContent = 'HackerOne Report';
+box.appendChild(header);
+
+var body = document.createElement('div');
+body.className = 'ai-box-body';
+body.textContent = data.report;
+
+box.appendChild(body);
+reportDiv.replaceChildren(box);
     })
-    .catch(function(e) { reportDiv.innerHTML = '<p style="color:#ef4444">Error: ' + e.message + '</p>'; });
+    .catch(function(e) {
+      reportDiv.replaceChildren();
+      var error = document.createElement('p');
+      error.style.color = '#ef4444';
+      error.textContent = 'Error: ' + e.message;
+      reportDiv.appendChild(error);
+    });
 }
 
 function runHashIdentify() {
@@ -369,33 +410,77 @@ async function runXSSScan() {
     });
 
     const data = await res.json();
+    const findings = data.findings || [];
 
     let html = "";
 
-    if (data.findings && data.findings.length > 0) {
-      data.findings.forEach(function(f) {
-        html += '<div class="finding">';
+    html += '<div class="scan-summary">';
+    html += '<div class="scan-summary-item">';
+    html += '<div class="scan-summary-label">Findings</div>';
+    html += '<div class="scan-summary-value">' + findings.length + '</div>';
+    html += '</div>';
+
+    html += '<div class="scan-summary-item">';
+    html += '<div class="scan-summary-label">Target</div>';
+    html += '<div class="scan-summary-value">XSS</div>';
+    html += '</div>';
+
+    html += '<div class="scan-summary-item">';
+    html += '<div class="scan-summary-label">Status</div>';
+    html += '<div class="scan-summary-value">' +
+      (findings.length ? 'Review' : 'Clear') +
+      '</div>';
+    html += '</div>';
+
+    html += '<div class="scan-summary-item">';
+    html += '<div class="scan-summary-label">Analysis</div>';
+    html += '<div class="scan-summary-value">' +
+      (data.aiAnalysis ? 'AI' : 'Basic') +
+      '</div>';
+    html += '</div>';
+
+    html += '</div>';
+
+    if (findings.length > 0) {
+      findings.forEach(function(f) {
+        const severity = (f.severity || "info").toLowerCase();
+
+        html += '<div class="finding severity-' + severity + '">';
+
         html += '<div class="finding-header">';
+        html += '<span class="badge badge-' + severity + '">' +
+          severity + '</span>';
         html += '<strong>' + (f.type || "XSS Finding") + '</strong>';
         html += '</div>';
 
         if (f.param) {
-          html += '<div class="finding-detail">Parameter: ' + f.param + '</div>';
+          html += '<div class="finding-detail">Parameter: ' +
+            f.param + '</div>';
         }
 
         if (f.payload) {
-          html += '<div class="finding-vector">Payload: ' + f.payload + '</div>';
+          html += '<div class="finding-vector">Payload: ' +
+            f.payload + '</div>';
         }
 
         if (f.evidence) {
-          html += '<div class="finding-detail">Evidence: ' + f.evidence + '</div>';
+          html += '<div class="finding-detail">Evidence: ' +
+            f.evidence + '</div>';
+        }
+
+        if (f.confidence) {
+          html += '<div class="finding-meta">';
+          html += '<span class="confidence-badge">Confidence: ' +
+            f.confidence + '</span>';
+          html += '</div>';
         }
 
         html += '</div>';
       });
     } else {
       html += '<div class="card">';
-      html += '<p style="color:#6b7280">No XSS findings detected.</p>';
+      html += '<p style="color:#22c55e;font-weight:700">No XSS findings detected.</p>';
+      html += '<p class="finding-detail" style="margin-top:6px">The scanner did not identify a confirmed XSS finding.</p>';
       html += '</div>';
     }
 
@@ -404,6 +489,7 @@ async function runXSSScan() {
     }
 
     show("xss-results", html);
+
   } catch (e) {
     show(
       "xss-results",
@@ -411,6 +497,7 @@ async function runXSSScan() {
     );
   }
 }
+
 
 async function runIDORScan() {
   const target = document.getElementById("idor-target").value.trim();
